@@ -3,161 +3,12 @@
 #include <vector>
 #include <algorithm>
 
+#include "Player.h"
+#include "Pawn.h"
+#include "Square.h"
+
 using namespace std;
 
-/**
- *
- * Class Player
- *
- */
-
-class Player
-{
-public:
-    Player(string name, string color) :
-            m_name(name), m_score(0), m_color(color)
-    {
-    }
-
-    const string& getColor() const
-    {
-        return m_color;
-    }
-
-    void setColor(const string& color)
-    {
-        m_color = color;
-    }
-
-    const string& getName() const
-    {
-        return m_name;
-    }
-
-    void setName(const string& name)
-    {
-        m_name = name;
-    }
-
-    int getScore() const
-    {
-        return m_score;
-    }
-
-    void setScore(int score)
-    {
-        m_score = score;
-    }
-
-private:
-    string m_name;
-    int m_score;
-    string m_color;
-};
-
-/**
- *
- * Class Pion
- *
- */
-
-class Pion
-{
-public:
-    Pion(string color, int posX, int posY) :
-            m_color(color), m_posX(posX), m_posY(posY), m_onEchiquier(false)
-    {
-
-    }
-    const string& getColor() const
-    {
-        return m_color;
-    }
-
-    void setColor(const string& color)
-    {
-        m_color = color;
-    }
-
-    bool isOnEchiquier() const
-    {
-        return m_onEchiquier;
-    }
-
-    void setOnEchiquier(bool onEchiquier)
-    {
-        m_onEchiquier = onEchiquier;
-    }
-
-    /**
-     * Position Management
-     */
-
-    int getPosX() const
-    {
-        return m_posX;
-    }
-
-    void setPosX(int posX)
-    {
-        m_posX = posX;
-    }
-
-    int getPosY() const
-    {
-        return m_posY;
-    }
-
-    void setPosY(int posY)
-    {
-        m_posY = posY;
-    }
-
-    void setPos(int posX, int posY)
-    {
-        m_posX = posX;
-        m_posY = posY;
-    }
-
-private:
-    string m_color;
-    int m_posX;
-    int m_posY;
-    bool m_onEchiquier;
-};
-
-/**
- *
- * Class Case
- *
- */
-class Case
-{
-public:
-    const string& getColor() const
-    {
-        return m_color;
-    }
-
-    void setColor(const string& color)
-    {
-        m_color = color;
-    }
-
-    Pion* getContainPion()
-    {
-        return m_containPion;
-    }
-
-    void setContainPion(Pion* containPion)
-    {
-        m_containPion = containPion;
-    }
-
-private:
-    string m_color;
-    Pion* m_containPion;
-};
 /**
  *
  * Class Game
@@ -167,106 +18,158 @@ private:
 class Game
 {
 public:
-    Game(int taille) : m_player1("Player1", "B"), m_player2("Player2", "W")
-{
-        // create map
-        m_taille = (taille % 2) != 0 ? taille -1 : taille;
-        for (int i =0; i< m_taille; i++)
+    Game(int taille) :
+            m_player1("Player1", "B"), m_player2("Player2", "W")
+    {
+        m_size = 10; // TODO : The game's default size is 10
+        // prepare pawns
+        for (int i = 0; i < (2 * m_size); i++)
         {
-            for (int j=0; j< m_taille; j++)
-            {
-
-            }
+            Pawn* l_pawnW = new Pawn("W", 0, 0);
+            Pawn* l_pawnB = new Pawn("B", 0, 0);
+            m_pawns1.push_back(l_pawnB);
+            m_pawns2.push_back(l_pawnW);
         }
-}
+        // create map
+        for (int i = 0; i < m_size; i++)
+        {
+            vector<Square*> l_line;
+            for (int j = 0; j < m_size; j++)
+            {
+                string l_color = (i + j) % 2 == 0 ? "W" : "B";
+                Square* c = new Square(l_color, i, j);
+                l_line.push_back(c);
+            }
+            m_matrix.push_back(l_line);
+        }
+    }
     /**
      * Game Management
      */
 
-    const vector<vector<Case*> >& getMatrix() const
+    const vector<vector<Square*> >& getMatrix() const
     {
         return m_matrix;
     }
 
-    void setMatrix(const vector<vector<Case*> >& matrix)
+    void setMatrix(const vector<vector<Square*> >& matrix)
     {
         m_matrix = matrix;
     }
 
     int getTaille() const
     {
-        return m_taille;
+        return m_size;
     }
 
     void setTaille(int taille)
     {
-        m_taille = taille;
+        m_size = taille;
     }
 
     void initMatrix()
     {
-        // Initialization of game matrix
+        // Initialization of game's pawn matrix
+        for (int i=0; i < m_size; i++)
+        {
+            for (int j=0; j < m_size;j++)
+            {
+                if (m_pawns1.size()>0 && m_matrix[i][j]->getColor() == "B")
+                {
+                    m_matrix[i][j]->setContainPawn(m_pawns1.back());
+                    m_matrix[i][j]->getContainPawn()->setPos(i,j);
+                    m_pawns1.pop_back();
+                }
+                if (i >=6 && m_matrix[i][j]->getColor() == "B" && m_pawns2.size()>0)
+                {
+                    m_matrix[i][j]->setContainPawn(m_pawns2.back());
+                    m_matrix[i][j]->getContainPawn()->setPos(i,j);
+                    m_pawns2.pop_back();
+                }
+            }
+        }
     }
-    /**
-     * Pions Management
-     */
-    const vector<Pion>& getPions1() const
+
+    void showMatrix()
     {
-        return m_pions1;
+        for (auto line : m_matrix)
+        {
+            cout << endl << "---------------------------------------" << endl;
+            for (auto cell : line)
+            {
+                cout << "| " ;
+                if (cell->getContainPawn() != NULL)
+                cout << (cell->getContainPawn()->getColor() == "B" ? "*" : "O") << " " ;
+                else
+                cout << "  ";
+            }
+            cout << "|";
+        }
+        cout << endl << "---------------------------------------" << endl;
     }
+        /**
+         * Pawns Management
+         */
+        const vector<Pawn*> getPawns1() const
+        {
+            return m_pawns1;
+        }
 
-    void setPions1(const vector<Pion>& pions1)
+        void setPawns1(const vector<Pawn*>& pawns1)
+        {
+            m_pawns1 = pawns1;
+        }
+
+        const vector<Pawn*>& getPawns2() const
+        {
+            return m_pawns2;
+        }
+
+        void setPawns2(const vector<Pawn*>& pawns2)
+        {
+            m_pawns2 = pawns2;
+        }
+        /**
+         * Players Management
+         */
+        const Player& getPlayer1() const
+        {
+            return m_player1;
+        }
+
+        void setPlayer1(const Player& player1)
+        {
+            m_player1 = player1;
+        }
+
+        const Player& getPlayer2() const
+        {
+            return m_player2;
+        }
+
+        void setPlayer2(const Player& player2)
+        {
+            m_player2 = player2;
+        }
+
+    private:
+        int m_size;
+        vector<vector<Square*>> m_matrix;
+        Player m_player1;
+        Player m_player2;
+        vector<Pawn*> m_pawns1;
+        vector<Pawn*> m_pawns2;
+
+    };
+
+    int main()
     {
-        m_pions1 = pions1;
+        std::string name;
+        std::cout << "Enter chessboard's size :\n";
+        getline(std::cin, name);
+        std::cout << "Boff anyway.. size will be 10, it's better man!" << "!\n";
+        Game GAME(10);
+        GAME.initMatrix();
+        GAME.showMatrix();
+
     }
-
-    const vector<Pion>& getPions2() const
-    {
-        return m_pions2;
-    }
-
-    void setPions2(const vector<Pion>& pions2)
-    {
-        m_pions2 = pions2;
-    }
-    /**
-     * Players Management
-     */
-    const Player& getPlayer1() const
-    {
-        return m_player1;
-    }
-
-    void setPlayer1(const Player& player1)
-    {
-        m_player1 = player1;
-    }
-
-    const Player& getPlayer2() const
-    {
-        return m_player2;
-    }
-
-    void setPlayer2(const Player& player2)
-    {
-        m_player2 = player2;
-    }
-
-private:
-    int m_taille;
-    vector<vector<Case*>> m_matrix;
-    Player m_player1;
-    Player m_player2;
-    vector<Pion> m_pions1;
-    vector<Pion> m_pions2;
-
-
-};
-
-int main()
-{
-    std::string name;
-    std::cout << "Taille de l'echiquier \n";
-    getline(std::cin, name);
-    std::cout << "Hello, " << name << "!\n";
-}
