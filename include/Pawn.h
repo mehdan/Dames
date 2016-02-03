@@ -23,14 +23,14 @@ class Pawn
 {
 public:
     Pawn(string color, int posX, int posY) :
-            m_color(color), m_posX(posX), m_posY(posY), m_onEchiquier(false)
+            m_color(color), m_posX(posX), m_posY(posY), m_checker(false)
     {
 
     }
     const string& getColor() const;
     void setColor(const string& color);
-    bool isOnEchiquier() const;
-    void setOnEchiquier(bool onEchiquier);
+    bool isChecker() const;
+    void setChecker(bool onEchiquier);
     /**
      * Position Management
      */
@@ -39,12 +39,14 @@ public:
     int getPosY() const;
     void setPosY(int posY);
     void setPos(int posX, int posY);
+    void kill();
 
 private:
+    void checkChecker();
     string m_color;
     int m_posX;
     int m_posY;
-    bool m_onEchiquier;
+    bool m_checker;
 };
 
 #endif /* PAWN_H_ */

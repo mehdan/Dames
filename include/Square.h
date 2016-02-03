@@ -34,6 +34,7 @@ public:
     void setPosX(int posX);
     int getPosY() const;
     void setPosY(int posY);
+    void empty();
 private:
     string m_color;
     Pawn* m_containPawn;

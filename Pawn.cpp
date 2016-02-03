@@ -17,14 +17,14 @@ void Pawn::setColor(const string& color)
     m_color = color;
 }
 
-bool Pawn::isOnEchiquier() const
+bool Pawn::isChecker() const
 {
-    return m_onEchiquier;
+    return m_checker;
 }
 
-void Pawn::setOnEchiquier(bool onEchiquier)
+void Pawn::setChecker(bool checker)
 {
-    m_onEchiquier = onEchiquier;
+    m_checker = checker;
 }
 
 int Pawn::getPosX() const
@@ -35,6 +35,7 @@ int Pawn::getPosX() const
 void Pawn::setPosX(int posX)
 {
     m_posX = posX;
+    checkChecker();
 }
 
 int Pawn::getPosY() const
@@ -49,6 +50,25 @@ void Pawn::setPosY(int posY)
 
 void Pawn::setPos(int posX, int posY)
 {
+    // update position
     m_posX = posX;
     m_posY = posY;
+    cout << "SET POSITION" << endl;
+    checkChecker();
+}
+
+void Pawn::kill()
+{
+    m_posX = -1;
+    m_posY = -1;
+}
+
+void Pawn::checkChecker()
+{
+    cout << "CHECK CHECKER" << endl;
+    // check if pawn attempts other player's last line
+    if(m_color == "B" && m_posX == 0 && m_checker == false)
+        m_checker = true;
+    if(m_color == "W" && m_posX == 9 && m_checker == false)
+        m_checker = true;
 }

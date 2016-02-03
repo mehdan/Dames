@@ -47,3 +47,7 @@ void Square::setPosY(int posY)
     m_posY = posY;
 }
 
+void Square::empty()
+{
+    m_containPawn = NULL;
+}
